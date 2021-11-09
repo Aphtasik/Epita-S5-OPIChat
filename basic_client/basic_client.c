@@ -101,7 +101,7 @@ void communicate(int server_socket)
     char buffer[DEFAULT_BUFFER_SIZE];
     ssize_t nread = 0;
 
-    while(1)
+    while (1)
     {
         memset(buffer, 0, DEFAULT_BUFFER_SIZE);
         puts("Enter your message:");
@@ -110,7 +110,8 @@ void communicate(int server_socket)
             errx(EXIT_FAILURE, "read error");
         else if (nread != 0 && nread != 1)
         {
-            write(1, "Server answered with: <OK> ", 28); // TODO: Clean this a bit
+            write(1, "Server answered with: <OK> ",
+                  28); // TODO: Clean this a bit
             rewrite(STDIN, buffer, DEFAULT_BUFFER_SIZE - 1);
         }
         else
