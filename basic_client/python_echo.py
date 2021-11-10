@@ -29,7 +29,7 @@ def main():
         # Communicate while the client does not close the connection
         while len(msg):
             print(msg)
-            client_socket.send(msg)
+            client_socket.send(b"<OK> " + msg)
             msg = client_socket.recv(4096)
 
         client_socket.close()
