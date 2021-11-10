@@ -1,13 +1,12 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -Werror -pedantic -std=c99 -ggdb
 CPPFLAGS= -D_GNU_SOURCE
+EXEC= basic_client
 
-all: basic_client 
+all: $(EXEC)
 
-basic_client: basic_client.o
-	$(CC) $^
-
-
+$(EXEC): basic_client.o
+	$(CC) $^ -o $@
 
 clean:
-	$(RM) a.out vgcor* *.o
+	$(RM) a.out vgcor* *.o $(EXEC)
