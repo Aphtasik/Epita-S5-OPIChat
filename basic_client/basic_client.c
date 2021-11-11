@@ -43,32 +43,44 @@ int prepare_socket(const char *ip, const char *port)
     return socket;
 }
 
+static size_t my_strlen(char *buff)
+{
+    size_t i = 0;
+    for (; buff[i] != '\n' && buff[i] != '\0' && i < DEFAULT_BUFFER_SIZE; i++);
+    return i;
+}
+
+
 void communicate(int server_socket)
 {
     if (server_socket == 1)
         errx(EXIT_FAILURE, "socket error");
-    char buffer[DEFAULT_BUFFER_SIZE] = { 0 };
-    ssize_t nread = 0;
+
+    char message[DEFAULT_BUFFER_SIZE] = { 0 };
+    char response[DEFAULT_BUFFER_SIZE] = { 0 };
+    ssize_t bytes;
     while (1)
     {
-        write(1, "Enter your message:\n", sizeof("Enter your message:\n"));
-        nread = read(0, buffer, DEFAULT_BUFFER_SIZE);
-        if (nread == -1)
-            errx(EXIT_FAILURE, "read error");
-        if (nread == 1)
-            break;
-        if (send(server_socket, buffer, nread, 0) != nread)
-            errx(EXIT_FAILURE, "send error");
-        ssize_t nrecieved;
-        if ((nrecieved = recv(server_socket, buffer, DEFAULT_BUFFER_SIZE, 0))
-            != 0)
+        printf("Enter your message:\n");
+        read(0, message, DEFAULT_BUFFER_SIZE);
+        bytes = send(server_socket, message, my_strlen(message), 0);
+        if (bytes < 0)
         {
-            if (nrecieved == -1)
-                errx(EXIT_FAILURE, "reception error");
-            write(1, "Server answered with: ", 23);
-            if (write(1, buffer, nrecieved) == -1)
-                errx(EXIT_FAILURE, "write error");
+            errx(EXIT_FAILURE, "send error");
         }
+        else if (bytes == 1 || bytes == 0)
+        {
+            break;
+        }
+
+        if (recv(server_socket, response, DEFAULT_BUFFER_SIZE, 0) < 0)
+        {
+            errx(EXIT_FAILURE, "recv error");
+        }
+
+        printf("Server reply : %s\n", response);
+        memset(message, 0, DEFAULT_BUFFER_SIZE);
+        memset(response, 0, DEFAULT_BUFFER_SIZE);
     }
     close(server_socket);
 }
