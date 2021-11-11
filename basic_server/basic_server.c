@@ -9,7 +9,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <string.h>
 
 int create_and_bind(struct addrinfo *addrinfo)
 {
@@ -62,13 +61,13 @@ void rewrite(int fd, const void *buf, size_t count, int print)
 void echo(int fd_in, int fd_out)
 {
     ssize_t nread;
-    char *buffer = malloc(sizeof(char) * DEFAULT_BUFFER_SIZE);
+    void *buffer[DEFAULT_BUFFER_SIZE] = { 0 };
     while ((nread = recv(fd_in, buffer, DEFAULT_BUFFER_SIZE - 1, 0)) > 0)
     {
         if (nread == -1)
             errx(EXIT_FAILURE, "receive function exited with code: %d", errno);
 
-        if(buffer[nread -1] == '\n')
+        if (buffer[nread - 1] == '\n')
         {
             rewrite(1, buffer, nread, 1);
             rewrite(fd_out, buffer, nread, 0);
