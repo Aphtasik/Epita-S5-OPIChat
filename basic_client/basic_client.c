@@ -34,21 +34,14 @@ int prepare_socket(const char *ip, const char *port)
     struct addrinfo addr;
     struct addrinfo *res;
     memset(&addr, 0, sizeof(struct addrinfo));
-    // maybe have to set some special flags (they are all set to 0)
+
     int ret = getaddrinfo(ip, port, &addr, &res);
     if (ret != 0)
         return 1;
+
     int socket = create_and_connect(res);
     freeaddrinfo(res);
     return socket;
-}
-
-static size_t my_strlen(char *buff)
-{
-    size_t i = 0;
-    for (; buff[i] != '\n' && buff[i] != '\0' && i < DEFAULT_BUFFER_SIZE; i++)
-        ;
-    return i;
 }
 
 void communicate(int server_socket)
@@ -56,32 +49,28 @@ void communicate(int server_socket)
     if (server_socket == 1)
         errx(EXIT_FAILURE, "socket error");
 
-    char message[DEFAULT_BUFFER_SIZE] = { 0 };
-    char response[DEFAULT_BUFFER_SIZE] = { 0 };
+    char *line = NULL;
+    size_t len = 0;
     ssize_t bytes;
-    while (1)
+
+    puts("Enter your message: ");
+    while ((bytes = getline(&line, &len, stdin)) != -1)
     {
-        printf("Enter your message:\n");
-        read(0, message, DEFAULT_BUFFER_SIZE);
-        bytes = send(server_socket, message, my_strlen(message), 0);
+        bytes = send(server_socket, line, bytes, 0);
         if (bytes < 0)
-        {
             errx(EXIT_FAILURE, "send error");
-        }
+
         else if (bytes == 1 || bytes == 0)
-        {
             break;
-        }
 
-        if (recv(server_socket, response, DEFAULT_BUFFER_SIZE, 0) < 0)
-        {
+        if ((bytes = recv(server_socket, line, bytes + 5, 0)) < 0)
             errx(EXIT_FAILURE, "recv error");
-        }
 
-        printf("Server reply : %s\n", response);
-        memset(message, 0, DEFAULT_BUFFER_SIZE);
-        memset(response, 0, DEFAULT_BUFFER_SIZE);
+        write(1, "Server anwsered: ", 17);
+        write(1, line, bytes);
+        write(1, "Enter your message:\n", 20);
     }
+    free(line);
     close(server_socket);
 }
 
