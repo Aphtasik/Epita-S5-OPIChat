@@ -46,28 +46,26 @@ int prepare_socket(const char *ip, const char *port)
 
 void rewrite(int fd, const void *buf, size_t count, int print)
 {
+    ssize_t nsend = 0;
     if(print)
+    {
         write(1, "Received Body: ", sizeof("Received Body: "));
-    ssize_t x = 0;
-    if ((x = write(fd, buf, count)) == -1)
-    {
-        errx(1, "write function exit with error code: %d", errno);
+        nsend = write(fd, buf, count);
     }
-    else if ((size_t) x != count)
-    {
-        while ((size_t) x < count)
-        {
-            x += write(fd, buf, 1);
-        }
-    }
+    else
+        nsend = send(fd, buf, count, MSG_NOSIGNAL);
+    if(nsend == -1)
+        errx(EXIT_FAILURE, "send failure, error code: %d", errno);
 }
 
 void echo(int fd_in, int fd_out)
 {
-    size_t nread;
+    ssize_t nread;
     void *buffer[DEFAULT_BUFFER_SIZE];
-    while ((nread = read(fd_in, buffer, DEFAULT_BUFFER_SIZE - 1)) > 0)
+    while ((nread = recv(fd_in, buffer, DEFAULT_BUFFER_SIZE - 1, 0)) > 0)
     {
+        if(nread == -1)
+            errx(EXIT_FAILURE, "receive function exited with code: %d", errno);
         rewrite(1, buffer, nread, 1);
         rewrite(fd_out, buffer, nread, 0);
     }
@@ -90,7 +88,7 @@ void communicate(int client_socket)
 {
     echo(client_socket, client_socket);
     close(client_socket);
-    rewrite(1, "Client disconnected\n", sizeof("Client disconnected"), 0);
+    write(1, "Client disconnected\n", sizeof("Client disconnected"));
 }
 
 int main(int argc, char **argv)

@@ -1,9 +1,9 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -Werror -pedantic -std=c99 -ggdb
+CFLAGS=-g -Wall -Wextra -Werror -pedantic -std=c99 -ggdb
 CPPFLAGS= -D_GNU_SOURCE
 EXEC= basic_server
 
-all: basic_server.o
+all: $(EXEC)
 
 $(EXEC): basic_server.o
 	$(CC) $^ -o $@
