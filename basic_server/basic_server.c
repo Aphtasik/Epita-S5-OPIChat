@@ -64,8 +64,6 @@ void echo(int fd_in, int fd_out)
     void *buffer[DEFAULT_BUFFER_SIZE];
     while ((nread = recv(fd_in, buffer, DEFAULT_BUFFER_SIZE - 1, 0)) > 0)
     {
-        if (nread == 1)
-            return;
         if (nread == -1)
             errx(EXIT_FAILURE, "receive function exited with code: %d", errno);
         rewrite(1, buffer, nread, 1);
