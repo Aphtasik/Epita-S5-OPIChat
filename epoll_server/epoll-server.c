@@ -47,18 +47,14 @@ int prepare_socket(const char *ip, const char *port)
     // Get a socket and listen for client connections
     int socket = create_and_bind(res);
     freeaddrinfo(res);
-    listen(socket, 5);
+    if(listen(socket, 5))
+        errx(EXIT_FAILURE, "listen error %d", errno);
     return socket;
 }
 
 struct connection_t *accept_client(int epoll_instance, int server_socket,
                                    struct connection_t *connection)
 {
-    // Init the event struct containing the flags and optional user data
-    struct epoll_event event = { 0 };
-    event.data.fd = server_socket;
-    event.events = EPOLLIN;
-
     struct epoll_event events[MAX_EVENTS];
     int events_count = epoll_wait(epoll_instance, events, MAX_EVENTS, -1);
 
@@ -77,13 +73,38 @@ struct connection_t *accept_client(int epoll_instance, int server_socket,
                 errx(EXIT_FAILURE, "accept error %d", errno);
             write(1, "Client connected\n", sizeof("Client connected\n"));
 
-            // Add client to the interest list
-            if (epoll_ctl(epoll_instance, EPOLL_CTL_ADD, client_fd, &event)
-                == -1)
+            // Add client to the interest list, event refer to the client event
+            struct epoll_event ev = {0};
+            ev.data.fd = client_fd;
+            ev.events = EPOLLIN;
+            if (epoll_ctl(epoll_instance, EPOLL_CTL_ADD, client_fd, &ev) == -1)
                 errx(EXIT_FAILURE, "epoll ctl failure %d", errno);
 
             // Add new client to connection struct
-            connection = add_client(connection, sock);
+            connection = add_client(connection, client_fd);
+        }
+        else
+        {
+            // a client socket has an active event
+            // Find the client struct,set buffer field and nb_read to show that 
+            // the client ask for communication
+            struct connection_t *client = find_client(connection, sock);
+            if (!connection)
+                errx(EXIT_FAILURE, "find error: fd not found in list");
+            char buf[DEFAULT_BUFFER_SIZE] = {0};
+            connection->buffer = buf;
+            ssize_t nread = recv(client->client_socket, 
+                    client->buffer, DEFAULT_BUFFER_SIZE -1, 0);
+            if(nread < 0)
+                errx(EXIT_FAILURE, "recv error %d", errno);
+            client->nb_read = nread;
+            // printing here cuz otherwise we do not have the beginning of linked list
+            struct connection_t *tmp = connection;
+            while(tmp != NULL)
+            {
+                send(tmp->client_socket, client->buffer, client->nb_read, MSG_NOSIGNAL);
+                tmp = tmp->next;
+            }
         }
     }
     return connection;
@@ -93,14 +114,12 @@ int main(int argc, char **argv)
 {
     // Args err handling
     if (argc != 3)
-        printf("Usage: <host> <port>");
+        printf("Usage: ./%s <host> <port>", argv[0]);
 
     // create server listening socket
     int server_socket = prepare_socket(argv[1], argv[2]);
-    if (server_socket == 1)
-        errx(EXIT_FAILURE, "socket creation error");
 
-    int epoll_instance = epoll_create(0);
+    int epoll_instance = epoll_create1(0);
 
     // Init the event struct containing the flags and optional user data
     struct epoll_event event = { 0 };
@@ -109,13 +128,16 @@ int main(int argc, char **argv)
 
     // add listening socket to the interest list
     if (epoll_ctl(epoll_instance, EPOLL_CTL_ADD, server_socket, &event) == -1)
-        errx(EXIT_FAILURE, "epoll ctl failure %d", errno);
+        errx(EXIT_FAILURE, "epoll ctl main failure %d", errno);
 
     // Create connection struct
     struct connection_t *connections = NULL;
 
     // Accept clients
-    connections = accept_client(epoll_instance, server_socket, connections);
-
+    while(1)
+    {
+        connections = accept_client(epoll_instance, 
+                server_socket, connections);
+    }
     return 0;
 }
