@@ -46,10 +46,10 @@ int prepare_socket(const char *ip, const char *port)
 static size_t my_strlen(char *buff)
 {
     size_t i = 0;
-    for (; buff[i] != '\n' && buff[i] != '\0' && i < DEFAULT_BUFFER_SIZE; i++);
+    for (; buff[i] != '\n' && buff[i] != '\0' && i < DEFAULT_BUFFER_SIZE; i++)
+        ;
     return i;
 }
-
 
 void communicate(int server_socket)
 {
