@@ -2,13 +2,13 @@
 
 #include <err.h>
 #include <errno.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
 #include <netdb.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 int create_and_bind(struct addrinfo *addrinfo)
 {
@@ -47,14 +47,14 @@ int prepare_socket(const char *ip, const char *port)
 void rewrite(int fd, const void *buf, size_t count, int print)
 {
     ssize_t nsend = 0;
-    if(print)
+    if (print)
     {
         write(1, "Received Body: ", sizeof("Received Body: "));
         nsend = write(fd, buf, count);
     }
     else
         nsend = send(fd, buf, count, MSG_NOSIGNAL);
-    if(nsend == -1)
+    if (nsend == -1)
         errx(EXIT_FAILURE, "send failure, error code: %d", errno);
 }
 
@@ -64,7 +64,9 @@ void echo(int fd_in, int fd_out)
     void *buffer[DEFAULT_BUFFER_SIZE];
     while ((nread = recv(fd_in, buffer, DEFAULT_BUFFER_SIZE - 1, 0)) > 0)
     {
-        if(nread == -1)
+        if (nread == 1)
+            return;
+        if (nread == -1)
             errx(EXIT_FAILURE, "receive function exited with code: %d", errno);
         rewrite(1, buffer, nread, 1);
         rewrite(fd_out, buffer, nread, 0);
@@ -79,7 +81,6 @@ int accept_client(int socket)
     int connection = accept(socket, &peer_addr, &peer_len);
     if (connection == -1)
         errx(EXIT_FAILURE, "accept connection failed");
-    close(socket);
     write(1, "Client connected\n", sizeof("Client connected\n"));
     return connection;
 }
@@ -96,8 +97,13 @@ int main(int argc, char **argv)
     if (argc != 3)
         printf("Usage: <host> <port>");
     int socket = prepare_socket(argv[1], argv[2]);
-    if(socket == 1)
+    if (socket == 1)
         errx(EXIT_FAILURE, "socket creation error");
-    int server_socket = accept_client(socket);
-    communicate(server_socket);
+    while (1)
+    {
+        int server_socket = accept_client(socket);
+        communicate(server_socket);
+    }
+    close(socket);
+    return 0;
 }
