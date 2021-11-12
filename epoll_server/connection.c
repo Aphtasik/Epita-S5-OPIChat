@@ -40,7 +40,6 @@ struct connection_t *remove_client(struct connection_t *connection,
             tmp->next = client_connection->next;
             if (close(client_connection->client_socket) == -1)
                 errx(1, "Failed to close socket");
-            free(client_connection->buffer);
             free(client_connection);
             break;
         }
