@@ -124,7 +124,7 @@ int main(int argc, char **argv)
                 ssize_t nread = recv(client->client_socket, client->buffer,
                                      DEFAULT_BUFFER_SIZE - 1, 0);
                 client->nb_read = nread;
-                char *is_newline - strstr(client->buffer, "\n");
+                char *is_newline = strstr(client->buffer, "\n");
                 if (!is_newline)
                 {
                     errx(EXIT_FAILURE, "NULL Client Buffer");
