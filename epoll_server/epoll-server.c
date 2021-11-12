@@ -126,7 +126,14 @@ int main(int argc, char **argv)
                 client->nb_read = nread;
 
                 char *is_newline = strstr(buf, "\n");
+                if (!is_newline)
+                {
 
+                }
+                else
+                {
+
+                }
                 if (nread <= 0)
                 {
                     // Client error / want to disconnect => disconnect
