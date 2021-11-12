@@ -116,11 +116,11 @@ int main(int argc, char **argv)
             {
                 // handle client request
                 struct connection_t *client = find_client(client_list, sock);
-                if (!client_list)
+                if (!client)
                     errx(EXIT_FAILURE, "find error: fd not found in list");
 
                 char buf[DEFAULT_BUFFER_SIZE] = { 0 };
-                client_list->buffer = buf;
+                client->buffer = buf;
                 ssize_t nread = recv(client->client_socket, client->buffer,
                                      DEFAULT_BUFFER_SIZE - 1, 0);
                 client->nb_read = nread;
