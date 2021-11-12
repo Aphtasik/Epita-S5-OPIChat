@@ -125,9 +125,6 @@ int main(int argc, char **argv)
                                      DEFAULT_BUFFER_SIZE - 1, 0);
                 client->nb_read = nread;
                 char *is_newline = strstr(client->buffer, "\n");
-                if (!is_newline)
-                {
-                }
                 if (nread <= 0)
                 {
                     // Client error / want to disconnect => disconnect
