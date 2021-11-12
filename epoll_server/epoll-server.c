@@ -127,7 +127,7 @@ int main(int argc, char **argv)
                 char *is_newline = strstr(client->buffer, "\n");
                 if (!is_newline)
                 {
-                    errx(EXIT_FAILURE, "NULL Client Buffer");
+                    break;
                 }
                 if (nread <= 0)
                 {
