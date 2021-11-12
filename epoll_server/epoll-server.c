@@ -127,7 +127,6 @@ int main(int argc, char **argv)
                 char *is_newline = strstr(client->buffer, "\n");
                 if (!is_newline)
                 {
-                    continue;
                 }
                 if (nread <= 0)
                 {
