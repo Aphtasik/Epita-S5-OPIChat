@@ -124,6 +124,17 @@ int main(int argc, char **argv)
                         client->buffer, DEFAULT_BUFFER_SIZE -1, 0);
                 client->nb_read = nread;
 
+                char *is_newline = strstr(client->buffer, "\n");
+                if (!is_newline)
+                {
+                    // no ending newline
+                    // Stack dans le buffer
+                }
+                else
+                {
+                    // 
+
+                }
                 if(nread <= 0) 
                 {
                     // Client error / want to disconnect => disconnect
@@ -141,7 +152,7 @@ int main(int argc, char **argv)
                         int nsend = send(tmp->client_socket, client->buffer, client->nb_read, MSG_NOSIGNAL);
                         if (nsend == -1)
                             errx(EXIT_FAILURE, "NOSIGNAL error %d", errno);
-                        else if (nsend == EPIPE)
+                        else if (nsend == 0)
                             break;
 
                         tmp = tmp->next;
