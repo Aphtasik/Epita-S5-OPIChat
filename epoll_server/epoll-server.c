@@ -125,14 +125,9 @@ int main(int argc, char **argv)
                                      DEFAULT_BUFFER_SIZE - 1, 0);
                 client->nb_read = nread;
 
-                char *is_newline = strstr(client->buffer, "\n");
-                if (!is_newline)
+                if (!client->buffer)
                 {
-
-                }
-                else
-                {
-
+                    errx(EXIT_FAILURE, "NULL Client Buffer");
                 }
                 if (nread <= 0)
                 {
