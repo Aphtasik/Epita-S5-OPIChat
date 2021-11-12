@@ -145,8 +145,7 @@ int main(int argc, char **argv)
                         if (nsend == -1)
                             errx(EXIT_FAILURE, "NOSIGNAL error %d", errno);
                         else if (nsend == 0)
-                            break;
-
+                            errx(EXIT_FAILURE, "SIGPIPE");
                         tmp = tmp->next;
                     }
                 }
