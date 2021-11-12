@@ -47,7 +47,7 @@ int prepare_socket(const char *ip, const char *port)
     // Get a socket and listen for client connections
     int socket = create_and_bind(res);
     freeaddrinfo(res);
-    if(listen(socket, 5))
+    if (listen(socket, 5))
         errx(EXIT_FAILURE, "listen error %d", errno);
     return socket;
 }
@@ -64,7 +64,7 @@ struct connection_t *accept_client(int epoll_instance, int server_socket,
     write(1, "Client connected\n", sizeof("Client connected\n"));
 
     // Add client to the interest list, event refer to the client event
-    struct epoll_event ev = {0};
+    struct epoll_event ev = { 0 };
     ev.data.fd = client_fd;
     ev.events = EPOLLIN;
     if (epoll_ctl(epoll_instance, EPOLL_CTL_ADD, client_fd, &ev) == -1)
@@ -109,7 +109,8 @@ int main(int argc, char **argv)
             int sock = events[event_idx].data.fd;
             if (sock == server_socket)
             {
-                client_list = accept_client(epoll_instance, server_socket, client_list);
+                client_list =
+                    accept_client(epoll_instance, server_socket, client_list);
             }
             else if (events[event_idx].events & EPOLLIN)
             {
@@ -118,27 +119,17 @@ int main(int argc, char **argv)
                 if (!client_list)
                     errx(EXIT_FAILURE, "find error: fd not found in list");
 
-                char buf[DEFAULT_BUFFER_SIZE] = {0};
+                char buf[DEFAULT_BUFFER_SIZE] = { 0 };
                 client_list->buffer = buf;
-                ssize_t nread = recv(client->client_socket, 
-                        client->buffer, DEFAULT_BUFFER_SIZE -1, 0);
+                ssize_t nread = recv(client->client_socket, client->buffer,
+                                     DEFAULT_BUFFER_SIZE - 1, 0);
                 client->nb_read = nread;
 
-                char *is_newline = strstr(client->buffer, "\n");
-                if (!is_newline)
-                {
-                    // no ending newline
-                    // Stack dans le buffer
-                }
-                else
-                {
-                    // 
-
-                }
-                if(nread <= 0) 
+                if (nread <= 0)
                 {
                     // Client error / want to disconnect => disconnect
-                    if (epoll_ctl(epoll_instance, EPOLL_CTL_DEL, sock, &events[event_idx]))
+                    if (epoll_ctl(epoll_instance, EPOLL_CTL_DEL, sock,
+                                  &events[event_idx]))
                         errx(EXIT_FAILURE, "epoll ctl failure %d", errno);
                     client_list = remove_client(client_list, sock);
                     close(sock);
@@ -147,9 +138,10 @@ int main(int argc, char **argv)
                 else
                 {
                     struct connection_t *tmp = client_list;
-                    while(tmp)
+                    while (tmp)
                     {
-                        int nsend = send(tmp->client_socket, client->buffer, client->nb_read, MSG_NOSIGNAL);
+                        int nsend = send(tmp->client_socket, client->buffer,
+                                         client->nb_read, MSG_NOSIGNAL);
                         if (nsend == -1)
                             errx(EXIT_FAILURE, "NOSIGNAL error %d", errno);
                         else if (nsend == 0)
