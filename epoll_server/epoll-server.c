@@ -125,6 +125,8 @@ int main(int argc, char **argv)
                                      DEFAULT_BUFFER_SIZE - 1, 0);
                 client->nb_read = nread;
 
+                char *is_newline = strstr(buf, "\n");
+
                 if (nread <= 0)
                 {
                     // Client error / want to disconnect => disconnect
@@ -145,7 +147,8 @@ int main(int argc, char **argv)
                         if (nsend == -1)
                             errx(EXIT_FAILURE, "NOSIGNAL error %d", errno);
                         else if (nsend == 0)
-                            errx(EXIT_FAILURE, "SIGPIPE");
+                            break;
+
                         tmp = tmp->next;
                     }
                 }
