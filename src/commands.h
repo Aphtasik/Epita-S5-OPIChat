@@ -16,4 +16,5 @@ struct exec_fun
     char *(*fun)(struct connection_t*, struct connection_t*);
 };
 
+char *exec_cmd(struct connection_t *client, struct connection_t *client_list);
 #endif

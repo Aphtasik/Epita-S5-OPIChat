@@ -78,11 +78,11 @@ void free_request(struct request *req)
     free(req->param);
 }
 
-struct fun fun_tab[5] = { { .fun = (*get_payload_size) },
-                          { .fun = (*get_status) },
-                          { .fun = (*get_cmd) },
-                          { .fun = (*get_param) },
-                          { .fun = (*get_msg) } };
+static struct fun fun_tab[5] = { { .fun = (*get_payload_size) },
+                                 { .fun = (*get_status) },
+                                 { .fun = (*get_cmd) },
+                                 { .fun = (*get_param) },
+                                 { .fun = (*get_msg) } };
 
 struct request parse_request(char *str_request)
 {

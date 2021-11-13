@@ -1,6 +1,6 @@
 #include "commands.h"
 
-char *enum_to_string(enum cmd cmd)
+static char *enum_to_string(enum cmd cmd)
 {
     switch (cmd)
     {
@@ -19,7 +19,7 @@ char *enum_to_string(enum cmd cmd)
     }
 }
 
-size_t total_size(struct request req, char *cmd_str)
+static size_t total_size(struct request req, char *cmd_str)
 {
     size_t total = 7;
     for (size_t i = 0; i < req.nb_param; i++)
@@ -33,7 +33,7 @@ size_t total_size(struct request req, char *cmd_str)
 }
 
 // send struct response in client_socket, return -1 on error, 0 otherwise
-char *format_response(struct request response)
+static char *format_response(struct request response)
 {
     char *cmd_str = enum_to_string(response.cmd);
     if (!cmd_str)
@@ -45,7 +45,7 @@ char *format_response(struct request response)
     if (response.nb_param == 0)
         sprintf(buf, "%d\n%d\n%s\n\n%s", response.payload_size, response.status,
                 cmd_str, response.msg);
-    if (response.nb_param == 1)
+    else if (response.nb_param == 1)
         sprintf(buf, "%d\n%d\n%s\n%s\n%s", response.payload_size,
                 response.status, cmd_str, response.param[0], response.msg);
     else
@@ -56,24 +56,36 @@ char *format_response(struct request response)
     return buf;
 }
 
-char *exec_ping(struct connection_t *client, struct connection_t *client_list)
+static char *exec_ping(struct connection_t *client,
+                       struct connection_t *client_list)
 {
-    struct request response = 
+    if (!client)
     {
-        .cmd = PING,
-        .nb_param = 0,
-        .param = NULL,
-        .status = 1,
-        .payload_size = 5,
-        .msg = "PONG"
-    };
+        return NULL;
+    }
+    else if (!client_list)
+    {
+        return NULL;
+    }
+    struct request response = { .cmd = PING,
+                                .nb_param = 0,
+                                .param = NULL,
+                                .status = 1,
+                                .payload_size = 5,
+                                .msg = "PONG" };
 
-    char* formated_str = format_response(response);
+    char *formated_str = format_response(response);
     return formated_str;
 }
 
-char *exec_login(struct connection_t *client, struct connection_t *client_list)
+static char *exec_login(struct connection_t *client,
+                        struct connection_t *client_list)
 {
+    if (!client_list)
+    {
+        return NULL;
+    }
+
     struct request response;
     if (client->name)
     {
@@ -97,37 +109,60 @@ char *exec_login(struct connection_t *client, struct connection_t *client_list)
         response.msg = "Logged in\n";
     }
 
-    char* formated_str = format_response(response);
+    char *formated_str = format_response(response);
     if (!formated_str)
-        return NULL; //TODO: handle errors
+        return NULL; // TODO: handle errors
 
     return formated_str;
 }
 
-char *exec_list_users(struct connection_t *client,
-                      struct connection_t *client_list)
+static char *exec_list_users(struct connection_t *client,
+                             struct connection_t *client_list)
 {
+    if (!client_list)
+    {
+        return NULL;
+    }
+    else if (!client)
+    {
+        return NULL;
+    }
     assert(0 && "Not implemented");
 }
 
-char *exec_send_dm(struct connection_t *client,
-                   struct connection_t *client_list)
+static char *exec_send_dm(struct connection_t *client,
+                          struct connection_t *client_list)
 {
+    if (!client_list)
+    {
+        return NULL;
+    }
+    else if (!client)
+    {
+        return NULL;
+    }
     assert(0 && "Not implemented");
 }
 
-
-char *exec_broadcast(struct connection_t *client,
-                     struct connection_t *client_list)
+static char *exec_broadcast(struct connection_t *client,
+                            struct connection_t *client_list)
 {
+    if (!client_list)
+    {
+        return NULL;
+    }
+    else if (!client)
+    {
+        return NULL;
+    }
     assert(0 && "Not implemented");
 }
 
-struct exec_fun fun_tab[5] = { { .fun = (*exec_ping) },
-                               { .fun = (*exec_login) },
-                               { .fun = (*exec_list_users) },
-                               { .fun = (*exec_send_dm) },
-                               { .fun = (*exec_broadcast) } };
+static struct exec_fun fun_tab[5] = { { .fun = (*exec_ping) },
+                                      { .fun = (*exec_login) },
+                                      { .fun = (*exec_list_users) },
+                                      { .fun = (*exec_send_dm) },
+                                      { .fun = (*exec_broadcast) } };
 
 char *exec_cmd(struct connection_t *client, struct connection_t *client_list)
 {

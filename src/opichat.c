@@ -126,6 +126,7 @@ void handle_events(int epoll_instance, int server_socket,
                         if (epoll_ctl(epoll_instance, EPOLL_CTL_DEL, sock,
                                       &events[event_idx]))
                             errx(EXIT_FAILURE, "epoll ctl failure %d", errno);
+                        free_request(&client->request);
                         client_list = remove_client(client_list, sock);
                         close(sock);
                         write(1, "Cient Disconnected\n", 19);
