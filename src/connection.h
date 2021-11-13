@@ -1,9 +1,9 @@
 #ifndef CONNECTION_H_
 #define CONNECTION_H_
 
-#include "parser.h"
-
 #include <sys/types.h>
+
+#include "parser.h"
 
 /**
  * \brief Contain all the information about all clients (linked list)
@@ -11,10 +11,11 @@
 struct connection_t
 {
     int client_socket; /**< socket fd of the client */
-    
+
     char *name; // client name
 
-    struct request request; /**< buffer containing all the data received by this client */
+    struct request
+        request; /**< buffer containing all the data received by this client */
 
     ssize_t nb_read; /**< number of bytes read (also size of the buffer) */
 

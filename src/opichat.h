@@ -5,8 +5,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#include "connection.h"
 #include "commands.h"
+#include "connection.h"
 
 /**
  * \brief The length of the event array, must be greater than zero

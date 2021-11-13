@@ -5,14 +5,13 @@ LDFLAGS=-lcriterion -fsanitize=address
 OBJ= src/parser.o src/connection.o src/opichat.o src/commands.o src/utils/xalloc.o
 EXEC= opichat_server
 
-all: $(EXEC)
+all: opichat_server
 
-$(EXEC): $(OBJ)
+opichat_client: $(OBJ)
 	$(CC) -o $@ $^
 
-opichat_client:
-
-opichat_server:
+opichat_server: $(OBJ)
+	$(CC) -o $@ $^
 
 parser.o: src/parser.c
 	$(CC) -c $^ $(CFLAGS)
