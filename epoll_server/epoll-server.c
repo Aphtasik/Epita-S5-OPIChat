@@ -147,9 +147,10 @@ int main(int argc, char **argv)
                         {
                             // Client error / want to disconnect => disconnect
                             if (epoll_ctl(epoll_instance, EPOLL_CTL_DEL, sock,
-                                        &events[event_idx]))
-                                errx(EXIT_FAILURE, "epoll ctl failure %d", errno);
-                            client_list = remove_client(client_list, sock);
+                                          &events[event_idx]))
+                                errx(EXIT_FAILURE, "epoll ctl failure %d",
+                                     errno);
+                            client_list = remove_client(client_list, sck);
                             close(sock);
                             write(1, "Cient Disconnected\n", 19);
                         }

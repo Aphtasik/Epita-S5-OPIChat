@@ -99,10 +99,10 @@ void handle_events(int epoll_instance, int server_socket,struct connection_t *cl
                     errx(EXIT_FAILURE, "find error: fd not found in list");
 
                 char buf[DEFAULT_BUFFER_SIZE] = { 0 };
-                client->buffer = buf;
-                ssize_t nread = recv(client->client_socket, client->buffer,
+                ssize_t nread = recv(client->client_socket, buf,
                                      DEFAULT_BUFFER_SIZE - 1, 0);
                 client->nb_read = nread;
+                client->request = parse_request(buf);
                 if (nread <= 0)
                 {
                     // Client error / want to disconnect => disconnect
@@ -115,14 +115,13 @@ void handle_events(int epoll_instance, int server_socket,struct connection_t *cl
                 }
                 else
                 {
-                    struct connection_t *tmp = client_list;
-                    while (tmp)
+                    // execute client command
+                    char *response = exec_cmd(client, client_list);
+                    for(int i = 0; response[i] ; i++)
                     {
-                        int nsend = send(tmp->client_socket, client->buffer,
-                                         client->nb_read, MSG_NOSIGNAL);
-                        if (nsend == -1)
-                            errx(EXIT_FAILURE, "NOSIGNAL error %d", errno);
-                        else if (nsend == 0)
+                        ssize_t nsend = send(client->client_socket, response[i],
+                                strlen(response[i]), MSG_NOSIGNAL);
+                        if (nsend <= 0)
                         {
                             // Client error / want to disconnect => disconnect
                             if (epoll_ctl(epoll_instance, EPOLL_CTL_DEL, sock,
@@ -132,8 +131,6 @@ void handle_events(int epoll_instance, int server_socket,struct connection_t *cl
                             close(sock);
                             write(1, "Cient Disconnected\n", 19);
                         }
-
-                        tmp = tmp->next;
                     }
                 }
             }
