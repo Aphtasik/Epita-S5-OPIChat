@@ -74,7 +74,8 @@ struct connection_t *accept_client(int epoll_instance, int server_socket,
     return add_client(connection, client_fd);
 }
 
-void handle_events(int epoll_instance, int server_socket,struct connection_t *client_list)
+void handle_events(int epoll_instance, int server_socket,
+                   struct connection_t *client_list)
 {
     while (1)
     {
@@ -116,28 +117,24 @@ void handle_events(int epoll_instance, int server_socket,struct connection_t *cl
                 else
                 {
                     // execute client command
-                    char *response = exec_cmd(client, client_list);
-                    for(int i = 0; response[i] ; i++)
+                    char *response = exec_cmd(client, client_list); // TODO:
+                    ssize_t nsend = send(client->client_socket, response,
+                                         strlen(response), MSG_NOSIGNAL);
+                    if (nsend <= 0)
                     {
-                        ssize_t nsend = send(client->client_socket, response[i],
-                                strlen(response[i]), MSG_NOSIGNAL);
-                        if (nsend <= 0)
-                        {
-                            // Client error / want to disconnect => disconnect
-                            if (epoll_ctl(epoll_instance, EPOLL_CTL_DEL, sock,
-                                        &events[event_idx]))
-                                errx(EXIT_FAILURE, "epoll ctl failure %d", errno);
-                            client_list = remove_client(client_list, sock);
-                            close(sock);
-                            write(1, "Cient Disconnected\n", 19);
-                        }
+                        // Client error / want to disconnect => disconnect
+                        if (epoll_ctl(epoll_instance, EPOLL_CTL_DEL, sock,
+                                      &events[event_idx]))
+                            errx(EXIT_FAILURE, "epoll ctl failure %d", errno);
+                        client_list = remove_client(client_list, sock);
+                        close(sock);
+                        write(1, "Cient Disconnected\n", 19);
                     }
                 }
             }
         }
     }
 }
-
 
 int main(int argc, char **argv)
 {

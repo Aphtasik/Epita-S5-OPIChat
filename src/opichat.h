@@ -6,6 +6,7 @@
 #include <sys/types.h>
 
 #include "connection.h"
+#include "commands.h"
 
 /**
  * \brief The length of the event array, must be greater than zero

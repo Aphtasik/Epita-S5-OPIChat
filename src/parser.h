@@ -1,7 +1,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#define _POSIX_SOURCE > 2.19
 #include <stdlib.h>
 #include <string.h>
 
@@ -36,5 +35,8 @@ struct fun
 {
     void (*fun)(struct request *, char *);
 };
+
+struct request parse_request(char *str_request);
+void free_request(struct request *req);
 
 #endif

@@ -8,11 +8,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/socket.h>
+#include <assert.h>
 
-struct fun
+struct exec_fun
 {
     // left parameter is client right parameter is client list
     char *(*fun)(struct connection_t*, struct connection_t*);
-}
+};
 
 #endif

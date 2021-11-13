@@ -5,7 +5,6 @@ static void get_payload_size(struct request *req, char *payload)
     req->payload_size = atoi(payload);
     req->msg = malloc(sizeof(char) * req->payload_size + 1);
 }
-
 static void get_status(struct request *req, char *status)
 {
     int stat = atoi(status);
