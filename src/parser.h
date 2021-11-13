@@ -1,9 +1,12 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <string.h>
+#include <stdlib.h>
+
 enum cmd
 {
-    PING,
+    PING = 0,
     LOGIN,
     LIST_USERS,
     SEND_DM,
@@ -18,19 +21,20 @@ enum status
     ERROR = 3
 };
 
-struct param
-{
-    char *var;
-    char *content;
-    struct param *next;
-};
 
 struct request
 {
     enum cmd cmd;
     enum status status;
-    struct param param;
+    size_t nb_param;
+    char **param;
+    int payload_size;
     char *msg;
+}
+
+struct fun
+{
+    void (*fun)(struct request*, char*) fn;
 };
 
 #endif
