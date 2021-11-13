@@ -11,8 +11,8 @@ struct connection_t *add_client(struct connection_t *connection,
 {
     struct connection_t *new_connection = xmalloc(sizeof(struct connection_t));
 
+    new_connection->name = NULL;
     new_connection->client_socket = client_socket;
-    new_connection->buffer = NULL;
     new_connection->nb_read = 0;
     new_connection->next = connection;
 
@@ -41,6 +41,7 @@ struct connection_t *remove_client(struct connection_t *connection,
             if (close(client_connection->client_socket) == -1)
                 errx(1, "Failed to close socket");
             free(client_connection);
+            free(connection->name);
             break;
         }
         tmp = tmp->next;

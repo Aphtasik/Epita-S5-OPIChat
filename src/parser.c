@@ -1,83 +1,101 @@
 #include "parser.h"
 
-
-char *get_str_status(enum status status)
-{
-    switch(status)
-    {
-    case REQUEST:
-        return "0";
-    case RESPONSE:
-        return "1";
-    case NOTIF:
-        return "2";
-    default: // ERROR
-        return "3";
-    }
-}
-
-char *get_str_cmd(enum cmd cmd)
-{
-    
-}
-
-void get_payload_size(struct request req, char *payload)
+static void get_payload_size(struct request *req, char *payload)
 {
     req->payload_size = atoi(payload);
     req->msg = malloc(sizeof(char) * req->payload_size + 1);
 }
 
-void get_status(struct request req, char *status)
+static void get_status(struct request *req, char *status)
 {
-    // TODO: check if it works
     int stat = atoi(status);
     req->status = stat;
 }
 
-void get_cmd(struct request req, char *cmd)
+static void get_cmd(struct request *req, char *cmd)
 {
-    if(!strcmp("PING", cmd))
+    if (!strcmp("PING", cmd))
+    {
         req->cmd = PING;
-    else if(!strcmp("LOGIN", cmd))
+        req->nb_param = 0;
+    }
+    else if (!strcmp("LOGIN", cmd))
+    {
         req->cmd = LOGIN;
-    else if(!strcmp("LIST_USERS", cmd))
+        req->nb_param = 0;
+    }
+    else if (!strcmp("LIST-USERS", cmd))
+    {
         req->cmd = LIST_USERS;
-    else if(!strcmp("SEND_DM", cmd))
+        req->nb_param = 0;
+    }
+    else if (!strcmp("SEND-DM", cmd))
+    {
         req->cmd = SEND_DM;
-    else if(!strcmp("BROADCAST", cmd))
+        req->nb_param = 2;
+    }
+    else if (!strcmp("BROADCAST", cmd))
+    {
         req->cmd = BROADCAST;
+        req->nb_param = 1;
+    }
 }
 
-void get_param(struct request *req, char *request)
-{
-    
-}
-
-void get_msg(struct request *req, char *msg)
+static void get_msg(struct request *req, char *msg)
 {
     strcpy(req->msg, msg);
 }
 
-struct fun fun_tab[5] = 
+static void get_param(struct request *req, char *param)
 {
-    { .fun = (*get_payload_size) },
-    { .fun = (*get_status) },
-    { .fun = (*get_command) },
-    { .fun = (*get_param) },
-    { .fun = (*get_msg) }
-};
-
-struct request parse_request(char *request)
-{
-    struct request request; 
-    request.param = NULL;
-    char *token = NULL;
-    char *saveptr;
-    int fun_idx = 0;
-    while((token = strtok_r(request, "\n", saveptr)))
+    if (req->nb_param == 0)
     {
-        fun_tab[fun_idx](request, token);
+        get_msg(req, param);
+        return;
+    }
+
+    if (!req->param)
+    {
+        req->param = malloc(sizeof(char *) * req->nb_param);
+        for (size_t i = 0; i < req->nb_param; i++)
+            req->param[i] = NULL;
+    }
+
+    size_t param_len = strlen(param);
+    char *arg = malloc(sizeof(char) * param_len + 1);
+
+    int j = 0;
+    while (req->param[j])
+        j++;
+    strcpy(arg, param);
+    req->param[j] = arg;
+}
+
+void free_request(struct request *req)
+{
+    free(req->msg);
+    for (size_t i = 0; i < req->nb_param; i++)
+        free(req->param[i]);
+    free(req->param);
+}
+
+struct fun fun_tab[5] = { { .fun = (*get_payload_size) },
+                          { .fun = (*get_status) },
+                          { .fun = (*get_cmd) },
+                          { .fun = (*get_param) },
+                          { .fun = (*get_msg) } };
+
+struct request parse_request(char *str_request)
+{
+    struct request request;
+    request.param = NULL;
+    int fun_idx = 0;
+    char *token = strtok(str_request, "\\n");
+    while (token)
+    {
+        fun_tab[fun_idx].fun(&request, token);
         fun_idx++;
+        token = strtok(NULL, "\\n");
     }
     return request;
 }

@@ -1,8 +1,9 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <string.h>
+#define _POSIX_SOURCE > 2.19
 #include <stdlib.h>
+#include <string.h>
 
 enum cmd
 {
@@ -21,7 +22,6 @@ enum status
     ERROR = 3
 };
 
-
 struct request
 {
     enum cmd cmd;
@@ -30,11 +30,11 @@ struct request
     char **param;
     int payload_size;
     char *msg;
-}
+};
 
 struct fun
 {
-    void (*fun)(struct request*, char*) fn;
+    void (*fun)(struct request *, char *);
 };
 
 #endif
