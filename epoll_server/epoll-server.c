@@ -150,7 +150,7 @@ int main(int argc, char **argv)
                                           &events[event_idx]))
                                 errx(EXIT_FAILURE, "epoll ctl failure %d",
                                      errno);
-                            client_list = remove_client(client_list, sck);
+                            client_list = remove_client(client_list, sock);
                             close(sock);
                             write(1, "Cient Disconnected\n", 19);
                         }
