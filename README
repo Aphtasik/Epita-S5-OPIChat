@@ -1,0 +1,27 @@
+#CONCEPTS
+OPIChat is an instant messaging system following the client/server paradigm. A client is an application
+that will ask another application, called server, to process some requests. The server should be able
+to understand client’s requests and respond accordingly. It acts as a way to connect multiple clients
+through a central authority.
+The clients and the server communicate using a protocol. Its goal is to define the syntax of messages,
+their semantic and how they are being exchanged (i.e. when, where...).
+In OPIChat, clients can send messages to the server. We will call such messages requests.
+These requests contain a command, indicating the action that needs to be performed by the server.
+The server will reply with another message called either response or error depending on the com-
+pletion of the request. It provides information about the status of the performed action.
+A server might also send unsolicited responses to connected clients to inform them of an event (for
+example, notify that a client just received a message from another client). Such messages will be
+called notifications.
+The OPIChat protocol is inspired by HTTP and IRC. It simplified version of these
+protocols.
+
+#SERVER
+The server will wait for incoming client connections, read their requests and respond accordingly.
+The server is able to handle multiple clients simultaneously so it uses polling with
+epoll to solve the problem of blocking IO.
+
+The server will take arguments similar to the client:
+./opichat_server <ip> <port>
+Where <ip> and <port> corresponds to the IP address and TCP port the server will bind to.
+If the command line arguments are invalid or if the server failed to bind, the server exit with
+status code 1 and log a pertinent message on stderr.
